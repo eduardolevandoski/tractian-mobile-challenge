@@ -10,7 +10,6 @@ environment:
 
 dependencies:
   http: ^1.2.2
-  skeletonizer: ^1.4.2
   flutter:
     sdk: flutter
 

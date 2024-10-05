@@ -13,7 +13,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Tractian',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: false, appBarTheme: AppBarTheme(backgroundColor: Color(0xff17192d))),
+      theme: ThemeData(
+        useMaterial3: false,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color(0xff17192d),
+        ),
+      ),
       home: const MenuView(),
     );
   }

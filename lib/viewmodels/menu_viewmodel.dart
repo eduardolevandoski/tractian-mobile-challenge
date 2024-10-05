@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:tractian_mobile_challenge/models/company.dart';
 import 'package:http/http.dart' as http;
 
-class MenuViewmodel {
+class MenuViewmodel extends ChangeNotifier {
   List<Company> _companies = [];
 
   List<Company> get companies => _companies;
@@ -13,5 +14,7 @@ class MenuViewmodel {
     if (response.statusCode == 200) {
       _companies = (json.decode(response.body) as List).map((json) => Company.fromJson(json)).toList();
     }
+
+    notifyListeners();
   }
 }

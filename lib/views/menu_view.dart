@@ -52,7 +52,7 @@ class _MenuViewState extends State<MenuView> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Icon(Icons.apartment, color: Colors.white),
+                              Image.asset("assets/images/icons/company.png", color: Colors.white, width: 22.0),
                               const SizedBox(width: 12.5),
                               Text(
                                 "${menuViewmodel.companies[index].name} Unit",

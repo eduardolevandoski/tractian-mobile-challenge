@@ -18,7 +18,7 @@ class TreeNode {
   final bool isLocation;
   final bool isAsset;
   final bool isComponent;
-  final bool isOperating;
+  final bool isAlert;
   final String? sensorType;
   final bool isRoot;
   final List<TreeNode> children;
@@ -29,7 +29,7 @@ class TreeNode {
     this.isLocation = false,
     this.isAsset = false,
     this.isComponent = false,
-    this.isOperating = false,
+    this.isAlert = false,
     this.sensorType,
     this.isRoot = false,
     this.children = const [],
@@ -128,7 +128,7 @@ class AssetsViewmodel extends ChangeNotifier {
         name: component.name,
         isComponent: true,
         sensorType: component.sensorType,
-        isOperating: component.status == "operating",
+        isAlert: component.status == "alert",
         isRoot: true,
       );
       yield TreeNodeWithLevel(componentNode, 0);
@@ -147,7 +147,7 @@ class AssetsViewmodel extends ChangeNotifier {
     }
   }
 
-  Future<List<TreeNode>> _buildSubTree(TreeNode parentNode, String? statusFilter) async {
+  Future<List<TreeNode>> _buildSubTree(TreeNode parentNode, String? filter) async {
     List<TreeNode> children = [];
 
     String parentId = parentNode.id;
@@ -164,13 +164,13 @@ class AssetsViewmodel extends ChangeNotifier {
 
     if (componentMap.containsKey(parentId)) {
       for (Asset component in componentMap[parentId]!) {
-        if (statusFilter == null || component.status == statusFilter) {
+        if (filter == null || (filter == "energy" && component.sensorType == "energy") || (filter == "alert" && component.status == "alert")) {
           children.add(TreeNode(
             id: component.id,
             name: component.name,
             isComponent: true,
-            isOperating: component.status == "operating",
             sensorType: component.sensorType,
+            isAlert: component.status == "alert",
           ));
         }
       }
@@ -215,7 +215,7 @@ class AssetsViewmodel extends ChangeNotifier {
           name: component.name,
           isComponent: true,
           sensorType: component.sensorType,
-          isOperating: component.status == "operating",
+          isAlert: component.status == "alert",
           isRoot: true,
         );
         yield TreeNodeWithLevel(componentNode, 0);
@@ -253,7 +253,7 @@ class AssetsViewmodel extends ChangeNotifier {
         isLocation: parentNode.isLocation,
         isAsset: parentNode.isAsset,
         isComponent: parentNode.isComponent,
-        isOperating: parentNode.isOperating,
+        isAlert: parentNode.isAlert,
         sensorType: parentNode.sensorType,
         isRoot: parentNode.isRoot,
         children: matchingChildren,
@@ -265,10 +265,10 @@ class AssetsViewmodel extends ChangeNotifier {
 
   // ---------------------------- Tree with chip filters --------------------------------
 
-  Stream<TreeNodeWithLevel> generateFilteredTreeNodesWithLevel(String statusFilter) async* {
+  Stream<TreeNodeWithLevel> generateFilteredTreeNodesWithLevel(String filter) async* {
     if (locationMap.containsKey('root')) {
       for (Location location in locationMap['root']!) {
-        Stream<TreeNodeWithLevel> childStream = _filterNode(location.id, 1, statusFilter);
+        Stream<TreeNodeWithLevel> childStream = _filterNode(location.id, 1, filter);
 
         bool hasMatchingChildren = false;
         await for (TreeNodeWithLevel childNode in childStream) {
@@ -288,13 +288,23 @@ class AssetsViewmodel extends ChangeNotifier {
     }
 
     for (Asset component in unlinkedComponents) {
-      if (component.status == statusFilter) {
+      if (filter == "alert" && component.status == filter) {
         TreeNode componentNode = TreeNode(
           id: component.id,
           name: component.name,
           isComponent: true,
           sensorType: component.sensorType,
-          isOperating: component.status == "operating",
+          isAlert: true,
+          isRoot: true,
+        );
+        yield TreeNodeWithLevel(componentNode, 0);
+      } else if (filter == "energy" && component.sensorType == "energy") {
+        TreeNode componentNode = TreeNode(
+          id: component.id,
+          name: component.name,
+          isComponent: true,
+          sensorType: component.sensorType,
+          isAlert: component.status == "alert",
           isRoot: true,
         );
         yield TreeNodeWithLevel(componentNode, 0);
@@ -302,15 +312,19 @@ class AssetsViewmodel extends ChangeNotifier {
     }
   }
 
-  Stream<TreeNodeWithLevel> _filterNode(String parentId, int level, String statusFilter) async* {
-    List<TreeNode> children = await _buildSubTree(TreeNode(id: parentId, name: ''), statusFilter);
+  Stream<TreeNodeWithLevel> _filterNode(String parentId, int level, String filter) async* {
+    List<TreeNode> children = await _buildSubTree(TreeNode(id: parentId, name: ''), filter);
+
     for (TreeNode child in children) {
       if (child.isComponent) {
-        if (child.isOperating == (statusFilter == "operating")) {
+        if (filter == "energy" && child.sensorType == "energy") {
+          yield TreeNodeWithLevel(child, level);
+        }
+        else if (filter == "alert" && child.isAlert) {
           yield TreeNodeWithLevel(child, level);
         }
       } else {
-        Stream<TreeNodeWithLevel> childStream = _filterNode(child.id, level + 1, statusFilter);
+        Stream<TreeNodeWithLevel> childStream = _filterNode(child.id, level + 1, filter);
 
         bool hasMatchingChildren = false;
         await for (TreeNodeWithLevel childNode in childStream) {

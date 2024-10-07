@@ -56,13 +56,13 @@ class _AssetsViewState extends State<AssetsView> {
     if (searchController.text.isNotEmpty) {
       nodeStream = assetsViewmodel.generateSearchedTreeNodesWithLevel(
           searchController.text.toLowerCase(),
-          selectedChipIndex == 0
-              ? "operating"
-              : selectedChipIndex == 1
-                  ? "alert"
-                  : null);
+          selectedChipIndex == 1 ? "alert" : null);
     } else if (selectedChipIndex != -1) {
-      nodeStream = assetsViewmodel.generateFilteredTreeNodesWithLevel(selectedChipIndex == 0 ? "operating" : "alert");
+      if (selectedChipIndex == 0) {
+        nodeStream = assetsViewmodel.generateFilteredTreeNodesWithLevel("energy");
+      } else if (selectedChipIndex == 1) {
+        nodeStream = assetsViewmodel.generateFilteredTreeNodesWithLevel("alert");
+      }
     } else {
       nodeStream = assetsViewmodel.generateTreeNodesWithLevel();
     }
@@ -225,19 +225,19 @@ class _AssetsViewState extends State<AssetsView> {
                   Image.asset("assets/images/icons/component.png", width: 24.0),
                   const SizedBox(width: 5.0),
                   Flexible(flex: 1, child: Text(node.name)),
-                  node.isOperating
-                      ? Icon(Icons.bolt, color: Colors.green)
-                      : Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Container(
-                            width: 7.5,
-                            height: 7.5,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.red,
-                            ),
-                          ),
+                  if (node.sensorType == "energy") Icon(Icons.bolt, color: Colors.green),
+                  if (node.isAlert)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Container(
+                        width: 7.5,
+                        height: 7.5,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.red,
                         ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -255,7 +255,8 @@ class _AssetsViewState extends State<AssetsView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Image.asset(node.isLocation ? "assets/images/icons/location.png" : "assets/images/icons/asset.png", width: 24.0),
+                Image.asset(node.isLocation ? "assets/images/icons/location.png" : "assets/images/icons/asset.png",
+                    width: 24.0),
                 const SizedBox(width: 5.0),
                 Expanded(child: Text(node.name)),
               ],

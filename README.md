@@ -9,7 +9,7 @@ The challenge is to build an asset management mobile application, following stri
 ## Demonstration
 
 <div align="center">
-  <video src="https://github.com/user-attachments/assets/c395f1a9-e887-440c-b2ca-241ab6ee8c4c" width="400" />
+  <video src="https://github.com/user-attachments/assets/a55c55c5-f746-434f-993e-5ed190c98c4c" width="400" />
 </div>
 
 ## Improvements

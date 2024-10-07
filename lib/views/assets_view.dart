@@ -22,6 +22,7 @@ class ChipData {
 class _AssetsViewState extends State<AssetsView> {
   AssetsViewmodel assetsViewmodel = AssetsViewmodel();
   TextEditingController searchController = TextEditingController();
+  ScrollController scrollController = ScrollController();
   int selectedChipIndex = -1;
   bool isLoading = true;
 
@@ -183,12 +184,15 @@ class _AssetsViewState extends State<AssetsView> {
   }
 
   Widget TreeWidget() {
-    return ListView.builder(
-      itemCount: nodes.length,
-      itemBuilder: (context, index) {
-        TreeNodeWithLevel nodeWithLevel = nodes[index];
-        return TreeNodes(nodeWithLevel, index);
-      },
+    return Scrollbar(
+      child: ListView.builder(
+        itemCount: nodes.length,
+        controller: scrollController,
+        itemBuilder: (context, index) {
+          TreeNodeWithLevel nodeWithLevel = nodes[index];
+          return TreeNodes(nodeWithLevel, index);
+        },
+      ),
     );
   }
 
